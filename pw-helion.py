@@ -20,7 +20,6 @@ def download_file(url, directory, file_name, referer):
     file_path = os.path.join(directory, file_name)
 
     with open(file_path, "wb") as file, tqdm(
-        desc=f"Downloading {file_name}",
         total=total_size,
         unit="B",
         unit_scale=True,
