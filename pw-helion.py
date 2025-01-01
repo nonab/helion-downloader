@@ -13,8 +13,10 @@ def sanitize_filename(filename):
     return re.sub(r'[\\/*?:"<>|]', "", filename)
 
 # Download file with progress bar
-def download_file(url, directory, file_name, referer):
+def download_file(url, directory, file_name, referer, cookies=None):
     headers = {'Referer': referer}
+    if cookies:
+        headers['Cookie'] = cookies  # Add cookies if provided
     response = requests.get(url, headers=headers, stream=True)
     total_size = int(response.headers.get('content-length', 0))
     file_path = os.path.join(directory, file_name)
@@ -61,10 +63,11 @@ def download_course(course, page, referer):
     # Get lesson links
     api_url = f"https://helion.pl/api/video/users/get-link/{course['book_id']}/{course['id']}"
     cookies = {cookie['name']: cookie['value'] for cookie in page.context.cookies()}
+    cookieHeader = "; ".join([f"{k}={v}" for k, v in cookies.items()]) 
     headers = {
         'x-requested-with': 'XMLHttpRequest',
         'Referer': referer,
-        'Cookie': "; ".join([f"{k}={v}" for k, v in cookies.items()]),
+        'Cookie': cookieHeader,
     }
     response = requests.get(api_url, headers=headers)
     data = response.json()
@@ -87,7 +90,7 @@ def download_course(course, page, referer):
         filename_match = re.search(r'filename="?(.+?)"?($|;)', content_disposition)
         filename = filename_match.group(1) if filename_match else f"materials_{course['book_id']}.zip"
         print(f"Pobieram materiały dodatkowe: {filename}")
-        download_file(material_url, course_directory, filename, referer)
+        download_file(material_url, course_directory, filename, referer, cookieHeader)
 def get_chromium_path():
     # Check if the script is running as a packaged executable
     if getattr(sys, 'frozen', False):
