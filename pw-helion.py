@@ -91,18 +91,7 @@ def download_course(course, page, referer):
         filename = filename_match.group(1) if filename_match else f"materials_{course['book_id']}.zip"
         print(f"Pobieram materiały dodatkowe: {filename}")
         download_file(material_url, course_directory, filename, referer, cookieHeader)
-def get_chromium_path():
-    # Check if the script is running as a packaged executable
-    if getattr(sys, 'frozen', False):
-        # Path for bundled application (PyInstaller unpacked files)
-        base_path = getattr(sys, '_MEIPASS', os.path.dirname(sys.executable))
-        # Construct the path to the bundled Chromium binary inside the temporary folder
-        chromium_path = os.path.join(base_path, 'ms-playwright', 'chromium', 'chrome-win', 'chrome.exe')
-    else:
-        # Normal development environment (outside of PyInstaller packaging)
-        chromium_path = "C:\\Users\\pawel\\AppData\\Local\\ms-playwright\\chromium-1148\\chrome-win\\chrome.exe"
-    
-    return chromium_path
+
 # Main function
 def main():
     parser = argparse.ArgumentParser(description="Logowanie do heliona")
@@ -113,8 +102,7 @@ def main():
     email = args.email or input("Wprowadź e-mail: ")
     password = args.password or getpass.getpass("wprowadź hasło: ")
     with sync_playwright() as playwright:
-        chromium = playwright.chromium
-        browser = chromium.launch(executable_path=get_chromium_path(), headless=True)
+        browser = playwright.chromium.launch(channel="chrome", headless=True)
         context = browser.new_context()
         page = context.new_page()
 
