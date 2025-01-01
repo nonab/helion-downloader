@@ -33,8 +33,9 @@ def download_file(url, directory, file_name, referer, cookies=None):
 
 # Login function
 def login(page, email, password):
-    page.goto('https://helion.pl/users/login')
-    page.click('button#CybotCookiebotDialogBodyButtonDecline')  # Dismiss cookie consent
+    page.goto('https://helion.pl/users/login', wait_until='domcontentloaded')
+    if page.is_visible('button#CybotCookiebotDialogBodyButtonDecline'):
+        page.click('button#CybotCookiebotDialogBodyButtonDecline')  
     page.fill('input[name="email"]', email)
     page.fill('input[name="password"]', password)
     page.click('#log_in_submit')
@@ -108,7 +109,7 @@ def main():
 
         try:
             # Log in
-            login(page, args.email, args.password)
+            login(page, email, password)
 
             # Fetch courses
             courses = get_courses(page)
