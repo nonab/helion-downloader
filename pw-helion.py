@@ -7,7 +7,7 @@ from playwright.sync_api import sync_playwright
 import argparse
 from pathlib import Path
 import getpass
-
+import sys
 # Sanitize filenames
 def sanitize_filename(filename):
     return re.sub(r'[\\/*?:"<>|]', "", filename)
@@ -39,6 +39,11 @@ def login(page, email, password):
     page.fill('input[name="email"]', email)
     page.fill('input[name="password"]', password)
     page.click('#log_in_submit')
+    page.wait_for_load_state('networkidle')
+    if page.is_visible('h4[style="color:#dc0a32;"]'):
+        error_message = page.text_content('h4[style="color:#dc0a32;"]')
+        print(f"Błąd logowania: {error_message}")
+        sys.exit();
 
 # Get course list
 def get_courses(page):
@@ -54,7 +59,6 @@ def get_courses(page):
         li_id = item.get_attribute('id').replace('item', '')
         courses.append({"id": li_id, "book_id": book_id, "title": title})
     return courses
-
 # Download course materials and videos
 def download_course(course, page, referer):
     print(f"\nPobieram: {course['title']}")
